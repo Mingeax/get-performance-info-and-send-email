@@ -1,10 +1,15 @@
 {
-  "name": "life-automation",
+  "name": "get-performance-info-and-send-email",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "一些node脚本, 从演艺平台获取所需的演出信息, 然后整理成电子邮件发送给指定邮箱",
+  "type": "module",
+  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "echo \"Error: no serve specified\" && exit 1",
+    "serve:damai": "node damai-search/main.js",
+    "serve:douban": "node douban-search/main.js",
+    "serve:email": "node auto-email/main.js"
   },
   "keywords": [],
   "author": "",
