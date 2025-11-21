@@ -4,11 +4,15 @@
   "description": "一些node脚本, 从演艺平台获取所需的演出信息, 然后整理成电子邮件发送给指定邮箱",
   "type": "module",
   "main": "main.js",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=8"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "echo \"Error: no serve specified\" && exit 1",
+    "serve": "node main.js --dist dist",
     "serve:damai": "node damai-search/main.js",
-    "serve:douban": "node douban-search/main.js",
+    "serve:douban": "node douban-search/main.js --dist test",
     "serve:email": "node auto-email/main.js"
   },
   "keywords": [],
@@ -16,7 +20,14 @@
   "license": "ISC",
   "packageManager": "pnpm@10.20.0",
   "dependencies": {
+    "dayjs": "^1.11.19",
+    "fs-extra": "^11.3.2",
     "jsdom": "^27.2.0",
-    "nodemailer": "^7.0.10"
+    "minimist": "^1.2.8",
+    "nodemailer": "^7.0.10",
+    "puppeteer": "^24.21.0"
+  },
+  "devDependencies": {
+    "@types/minimist": "^1.2.5"
   }
 }

@@ -30,3 +30,8 @@ export const blackKeywords = Object.freeze({
 });
 
 export const city = "北京";
+
+export const outputFileName = Object.freeze({
+  bad: "badPerformances",
+  good: "goodPerformances",
+});

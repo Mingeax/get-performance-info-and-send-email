@@ -14,11 +14,9 @@ const {
 const transporter = nodemailer.createTransport({
   host: service,
   port: 465,
-  secure: true, // upgrade later with STARTTLS
+  secure: true,
   auth: {
-    // type: "OAuth2",
     user,
-    // accessToken,
     pass: accessToken,
   },
 });

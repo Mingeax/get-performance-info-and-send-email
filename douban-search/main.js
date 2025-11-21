@@ -1,14 +1,11 @@
+import { emptyDir, outputFile } from "fs-extra/esm";
 import { JSDOM } from "jsdom";
-import { writeFile, mkdir, appendFile, rm } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { appendFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { outputFileName } from "./config.js";
 
 const baseUrl = "https://www.douban.com/doulist/111299960/";
 
-const outputFileName = {
-  bad: "bad_film",
-  good: "good_film",
-};
 const distDir = resolve(import.meta.dirname, "dist");
 
 const outputFilePath = {
@@ -27,12 +24,11 @@ const html = await res.text();
 
 const dom = new JSDOM(html);
 
-rm(distDir, { force: true, recursive: true })
-  .finally(() => mkdir(distDir))
+emptyDir(distDir)
   .then(() => {
     return Promise.allSettled([
-      writeFile(outputFilePath.good, `查询时间: ${new Date()}\n`),
-      writeFile(outputFilePath.bad, `查询时间: ${new Date()}\n`),
+      outputFile(outputFilePath.good, `查询时间: ${new Date()}\n`),
+      outputFile(outputFilePath.bad, `查询时间: ${new Date()}\n`),
     ]);
   })
   .then(() => interpretDomNOutput());

@@ -1,11 +1,25 @@
 import { writeFile } from "node:fs/promises";
-import { whiteKeywords, blackKeywords, city } from "./config.js";
+import { resolve } from "node:path";
+import {
+  whiteKeywords,
+  blackKeywords,
+  city,
+  outputFileName,
+} from "./config.js";
 import { matchKeywords, setURLQueries } from "./util.js";
+import puppeteer from "puppeteer";
+import { remove, ensureDir, emptyDir, outputFile } from "fs-extra/esm";
 
 // TODO: bug: 演出条目有可能重复,疑似发生在页首或页尾
 
 // 也是主搜索页
 const baseUrl = "https://search.damai.cn/searchajax.html";
+const distDir = resolve(import.meta.dirname, "dist");
+
+const outputFilePath = {
+  bad: resolve(distDir, `${outputFileName.bad}.txt`),
+  good: resolve(distDir, `${outputFileName.good}.txt`),
+};
 
 export async function fetchAllPages() {
   let curPage = 1;
@@ -20,8 +34,8 @@ export async function fetchAllPages() {
     ["ctl", "音乐会"],
     ["cty", city],
     ["tsg", "5"],
-    ["st", "2025-10-01"],
-    ["et", "2025-10-31"],
+    ["st", "2025-12-01"],
+    ["et", "2025-12-31"],
     ["order", "2"], // 时间顺序排列
   ]);
 
@@ -37,6 +51,46 @@ export async function fetchAllPages() {
     ]);
 
     console.log(`请求第${curPage}页...`);
+    console.log(
+      "🌞 -- req.js:56 -- fetchAllPages -- urlObj.toString():",
+      urlObj.toString()
+    );
+
+    // const browser = await puppeteer.launch();
+    // const page = await browser.newPage();
+    // await page.goto(
+    //   "https://search.damai.cn/searchajax.html?keyword=&cty=%E5%8C%97%E4%BA%AC&ctl=%E9%9F%B3%E4%B9%90%E4%BC%9A&sctl=&tsg=0&st=&et=&order=1&pageSize=30&currPage=1&tn="
+    // );
+
+    const res1 = await fetch(
+      "https://search.damai.cn/searchajax.html?keyword=&cty=%E5%8C%97%E4%BA%AC&ctl=%E9%9F%B3%E4%B9%90%E4%BC%9A&sctl=&tsg=0&st=&et=&order=1&pageSize=30&currPage=1&tn=",
+      {
+        headers: {
+          accept: "application/json, text/plain, */*",
+          "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+          "cache-control": "no-cache",
+          pragma: "no-cache",
+          priority: "u=1, i",
+          "sec-ch-ua":
+            '"Chromium";v="142", "Microsoft Edge";v="142", "Not_A Brand";v="99"',
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": '"macOS"',
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "x-xsrf-token": "ba298a81-ae73-4123-84bd-f63ebb738e12",
+          cookie:
+            "XSRF-TOKEN=ba298a81-ae73-4123-84bd-f63ebb738e12; isg=BIOD9m_47vfg56IDBMfan75qEkEt-Bc64LtvPrVg2eJYdKOWP8vRiAPn7wQ6MG8y; x5sec=7b22733b32223a2265343437323361623131616332656335222c22617365727665723b33223a22307c434d65662f386747454c764c323573454967706a5958427a62476c6b5a5859794d4e507933356f46227d",
+          Referer:
+            "https://search.damai.cn/search.htm?spm=a2oeg.home.category.ditem_5.591b23e1ghzF98&ctl=%E9%9F%B3%E4%B9%90%E4%BC%9A&order=1&cty=%E5%8C%97%E4%BA%AC",
+        },
+        body: null,
+        method: "GET",
+      }
+    );
+    // const text = await res1.text();
+
+    // console.log("🌞 -- req.js:107 -- fetchAllPages -- text:", text);
 
     const res = await fetch(urlObj.toString(), {
       headers: {
@@ -47,7 +101,7 @@ export async function fetchAllPages() {
       },
     });
 
-    const json = await res.json();
+    const json = await res1.json();
     const { resultData } = json.pageData;
 
     if (curPage === 1) {
@@ -151,7 +205,7 @@ export async function fetchAllPages() {
         price_str,
         showtime,
         showstatus,
-        detailsWebPage: `https://detail.damai.cn/item.htm?id=${id}`
+        detailsWebPage: `https://detail.damai.cn/item.htm?id=${id}`,
       };
 
       if (actors) recordItem.actors = actors;
@@ -187,13 +241,13 @@ export async function fetchAllPages() {
     } else hasMore = false;
   }
 
-  await writeFile(
-    "good_performances.json",
+  await outputFile(
+    outputFilePath.good,
     JSON.stringify(goodPerformances, null, "\t")
   );
 
-  await writeFile(
-    "bad_performances.json",
+  await outputFile(
+    outputFilePath.bad,
     JSON.stringify(badPerformances, null, "\t")
   );
 
