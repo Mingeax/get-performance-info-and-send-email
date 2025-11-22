@@ -1,3 +1,5 @@
+import { resolve } from "path";
+
 export const whiteKeywords = Object.freeze({
   name: ["国家大剧院"],
   venue: ["国家大剧院"],
@@ -35,3 +37,12 @@ export const outputFileName = Object.freeze({
   bad: "badPerformances",
   good: "goodPerformances",
 });
+
+const distDirName = "dist";
+
+const distDir = resolve(import.meta.dirname, distDirName);
+
+export const outputFilePath = {
+  bad: resolve(distDir, `${outputFileName.bad}.txt`),
+  good: resolve(distDir, `${outputFileName.good}.txt`),
+};

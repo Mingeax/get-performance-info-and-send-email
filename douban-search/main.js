@@ -1,17 +1,10 @@
 import { emptyDir, outputFile } from "fs-extra/esm";
 import { JSDOM } from "jsdom";
 import { appendFile } from "node:fs/promises";
-import { resolve } from "node:path";
-import { outputFileName } from "./config.js";
+import { resolve, dirname } from "node:path";
+import { outputFileName, outputFilePath } from "./config.js";
 
 const baseUrl = "https://www.douban.com/doulist/111299960/";
-
-const distDir = resolve(import.meta.dirname, "dist");
-
-const outputFilePath = {
-  bad: resolve(distDir, `${outputFileName.bad}.txt`),
-  good: resolve(distDir, `${outputFileName.good}.txt`),
-};
 
 const urlObj = new URL(baseUrl);
 
@@ -23,7 +16,7 @@ const res = await fetch(urlObj.toString(), {
 const html = await res.text();
 
 const dom = new JSDOM(html);
-
+const distDir = dirname(outputFilePath.good);
 emptyDir(distDir)
   .then(() => {
     return Promise.allSettled([

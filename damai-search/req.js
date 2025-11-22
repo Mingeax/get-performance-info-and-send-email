@@ -1,10 +1,11 @@
-import { writeFile } from "node:fs/promises";
+import { writeFile, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import {
   whiteKeywords,
   blackKeywords,
   city,
   outputFileName,
+  outputFilePath,
 } from "./config.js";
 import { matchKeywords, setURLQueries } from "./util.js";
 import puppeteer from "puppeteer";
@@ -14,12 +15,6 @@ import { remove, ensureDir, emptyDir, outputFile } from "fs-extra/esm";
 
 // 也是主搜索页
 const baseUrl = "https://search.damai.cn/searchajax.html";
-const distDir = resolve(import.meta.dirname, "dist");
-
-const outputFilePath = {
-  bad: resolve(distDir, `${outputFileName.bad}.txt`),
-  good: resolve(distDir, `${outputFileName.good}.txt`),
-};
 
 export async function fetchAllPages() {
   let curPage = 1;
@@ -51,10 +46,6 @@ export async function fetchAllPages() {
     ]);
 
     console.log(`请求第${curPage}页...`);
-    console.log(
-      "🌞 -- req.js:56 -- fetchAllPages -- urlObj.toString():",
-      urlObj.toString()
-    );
 
     // const browser = await puppeteer.launch();
     // const page = await browser.newPage();
@@ -62,46 +53,30 @@ export async function fetchAllPages() {
     //   "https://search.damai.cn/searchajax.html?keyword=&cty=%E5%8C%97%E4%BA%AC&ctl=%E9%9F%B3%E4%B9%90%E4%BC%9A&sctl=&tsg=0&st=&et=&order=1&pageSize=30&currPage=1&tn="
     // );
 
-    const res1 = await fetch(
-      "https://search.damai.cn/searchajax.html?keyword=&cty=%E5%8C%97%E4%BA%AC&ctl=%E9%9F%B3%E4%B9%90%E4%BC%9A&sctl=&tsg=0&st=&et=&order=1&pageSize=30&currPage=1&tn=",
-      {
-        headers: {
-          accept: "application/json, text/plain, */*",
-          "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-          "cache-control": "no-cache",
-          pragma: "no-cache",
-          priority: "u=1, i",
-          "sec-ch-ua":
-            '"Chromium";v="142", "Microsoft Edge";v="142", "Not_A Brand";v="99"',
-          "sec-ch-ua-mobile": "?0",
-          "sec-ch-ua-platform": '"macOS"',
-          "sec-fetch-dest": "empty",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "same-origin",
-          "x-xsrf-token": "ba298a81-ae73-4123-84bd-f63ebb738e12",
-          cookie:
-            "XSRF-TOKEN=ba298a81-ae73-4123-84bd-f63ebb738e12; isg=BIOD9m_47vfg56IDBMfan75qEkEt-Bc64LtvPrVg2eJYdKOWP8vRiAPn7wQ6MG8y; x5sec=7b22733b32223a2265343437323361623131616332656335222c22617365727665723b33223a22307c434d65662f386747454c764c323573454967706a5958427a62476c6b5a5859794d4e507933356f46227d",
-          Referer:
-            "https://search.damai.cn/search.htm?spm=a2oeg.home.category.ditem_5.591b23e1ghzF98&ctl=%E9%9F%B3%E4%B9%90%E4%BC%9A&order=1&cty=%E5%8C%97%E4%BA%AC",
-        },
-        body: null,
-        method: "GET",
-      }
-    );
+    const res1 = await fetch(urlObj.toString(), {
+      headers: {
+        accept: "application/json, text/plain, */*",
+        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+        cookie:
+          "cna=PZNyIVUoyUwCAZz+But2SByv; tfstk=go2tKNZw0wbguB8wXrfhn3q3YyIht6qavPrWnq0MGyULzzpcb5409mU0JGrgcNPYJPq7sfqbnmwxQJVMnVbZHoaoHablETqabjkfraA4vOMZhm6ml6c1iupsaablE9f6AxQOrr4hvDDI02isccifv2im4xOs1rgIO0ik5xMblMHIcmYscKO1dkiiRqMjhrZCvmuIfxMblksK0vf1QqXKzKF1w8alugB9HKeKXf3Jn2pvHimt64ZsJa_7pEGtPlgphN_lO40x88_h9kPQ1PmUkTQKI7qu3bw6RGm_wo2-ZXTH9rktDukUFaAmtSE_hXFFFEnaGl2YGkjJa0PQ7RPxen6_vA3tNcldFKUSG0ErL8_kiXVYf-GLTaOoPJrQZSUG8KggwkaKZJYHEAVuq-l7CFIPF82R5u8oymA1vMd2gfieE5TuqdaUR4nKrMbBgIlLID3lvMd2gfiEv4jUMIRq9Rf..; XSRF-TOKEN=310bcb93-3b01-483a-a4f1-1d1ef3c711b7; _samesite_flag_=true; cookie2=128131085455c9c8f026151df2e3a3fb; t=c71f3d999a8d8e58516cea6a1d051445; _tb_token_=3737b35113b4b; _hvn_login=18; sgcookie=E100oSKufBiIuOq6Ge6TnsTMsowfgoAJofhF%2BkoMK4WCXOKwYD5IuiNH1LFZ9sMglTPRYHrcCGFw9fBl2U2yG%2F8cVYZKJPFBktw4RT89xZ5hXZw%3D; munb=2221236977349; csg=72511b17; damai.cn_nickName=%E9%BA%A6%E5%AD%90cDhbv; damai.cn_user=ahruoymlvi8tfNkFljak8FERFXfZoru3ZevkiL9Uo7EZAV7C5O3GkjgspGRDi9wyGxb2+Rjuqig=; damai.cn_user_new=ahruoymlvi8tfNkFljak8FERFXfZoru3ZevkiL9Uo7EZAV7C5O3GkjgspGRDi9wyGxb2%2BRjuqig%3D; h5token=048e6cd8cda7401aa4f62640dd99fc48_1_1; damai_cn_user=ahruoymlvi8tfNkFljak8FERFXfZoru3ZevkiL9Uo7EZAV7C5O3GkjgspGRDi9wyGxb2%2BRjuqig%3D; loginkey=048e6cd8cda7401aa4f62640dd99fc48_1_1; user_id=651080268; isg=BHJyqdkfT6y2ynOQAiDCrZF5w7hUA3adPzo8UzxPoCWHzxDJJJH5rB9kvmvz2-41; x5sectag=493425; mtop_partitioned_detect=1; _m_h5_tk=7171e68fe14f74bfabc8fe9d98ef34b1_1763812929750; _m_h5_tk_enc=956933f44a7b52628c546c5c2d0836e1; x5sec=7b22733b32223a2230366364626132393836396565383962222c22617365727665723b33223a22307c434b475568736b474549584368653448476738794d6a49784d6a4d324f5463334d7a51354f7a4d69436d4e6863484e736157526c646a4977302f4c666d67553d227d",
+        Referer: "https://search.damai.cn/search.htm",
+      },
+    });
     // const text = await res1.text();
 
     // console.log("🌞 -- req.js:107 -- fetchAllPages -- text:", text);
 
-    const res = await fetch(urlObj.toString(), {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
-        accept: "application/json, text/plain, */*",
-        referer: "https://search.damai.cn/search.htm",
-      },
-    });
+    // const res = await fetch(urlObj.toString(), {
+    //   headers: {
+    //     "User-Agent":
+    //       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
+    //     accept: "application/json, text/plain, */*",
+    //     referer: "https://search.damai.cn/search.htm",
+    //   },
+    // });
 
     const json = await res1.json();
+
     const { resultData } = json.pageData;
 
     if (curPage === 1) {
