@@ -37,9 +37,9 @@ const transporter = nodemailer.createTransport({
 
 try {
   await transporter.verify();
-  console.log("Server is ready to take our messages");
+  console.log("邮箱服务器连接成功, 准备传输信息");
 } catch (err) {
-  console.error("Verification failed", err);
+  console.error("邮箱服务器连接失败, 请重试或联系项目作者", err);
 }
 
 const mailOptions = {
