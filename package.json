@@ -1,6 +1,6 @@
 {
   "name": "get-performance-info-and-send-email",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "一些node脚本, 从演艺平台获取所需的演出信息, 然后整理成电子邮件发送给指定邮箱",
   "type": "module",
   "main": "main.js",
