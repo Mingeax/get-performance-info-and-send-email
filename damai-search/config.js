@@ -27,6 +27,9 @@ export const blackKeywords = Object.freeze({
     "童话",
     "爱乐汇",
     "惠民",
+    "动漫",
+    "早鸟",
+    "新年",
   ],
   venue: ["中山音乐堂", "爱乐汇艺术空间", "通州", "爱乐汇"],
 });
