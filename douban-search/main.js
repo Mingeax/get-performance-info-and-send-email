@@ -27,12 +27,13 @@ emptyDir(distDir)
       if (!dom) break;
 
       try {
-        interpretDomNOutput(dom);
+        await interpretDomNOutput(dom);
       } catch (e) {
         if (e.message === "当前电影列表为空.") {
           console.log("请求完毕,进程关闭中...");
+        } else {
+          console.log(e.message);
         }
-
         break;
       }
     }
@@ -83,11 +84,13 @@ emptyDir(distDir)
     //   });
     // }
   });
-
+// TODO: 筛选掉工作日和已放映的片场
 const interpretDomNOutput = (dom) => {
   const itemList = dom.window.document.querySelectorAll(".doulist-item");
 
   if (!itemList.length) throw Error("当前电影列表为空.");
+
+  let prom = Promise.resolve();
 
   itemList.forEach((listItem, i) => {
     const itemBody = listItem.querySelector(".mod .bd.doulist-subject");
@@ -125,6 +128,9 @@ ${textArr.join("\n")}
 `;
 
     const goodOrBad = textCollection.rate >= 8 ? "good" : "bad";
-    appendFile(outputFilePath[goodOrBad], text);
+
+    prom = prom.then(() => appendFile(outputFilePath[goodOrBad], text));
   });
+
+  return prom;
 };
