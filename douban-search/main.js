@@ -1,10 +1,25 @@
 import { emptyDir, outputFile } from "fs-extra/esm";
 import { JSDOM } from "jsdom";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import localeData from "dayjs/plugin/localeData.js";
+import "dayjs/locale/zh-cn.js";
 import { appendFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { outputFileName, outputFilePath } from "./config.js";
 
+dayjs.extend(customParseFormat);
+dayjs.extend(localeData);
+dayjs.locale("zh-cn");
+
+// console.log(dayjs.weekdays());
+// console.log(dayjs.localeData());
+// console.log(dayjs().localeData());
+
+const WEEK_DAYS = dayjs.weekdays();
+
 const baseUrl = "https://www.douban.com/doulist/111299960/";
+const now = dayjs();
 
 const distDirName = "dist";
 const urlObj = new URL(baseUrl);
@@ -20,7 +35,6 @@ emptyDir(distDir)
     ]);
   })
   .then(async () => {
-    let hasMore = true;
     let startNum = 1;
 
     for await (const dom of fetchIterator()) {
@@ -48,9 +62,7 @@ emptyDir(distDir)
           })
         ).text();
 
-        const dom = new JSDOM(html);
-
-        yield dom;
+        yield new JSDOM(html);
 
         startNum += 25;
       }
@@ -84,7 +96,7 @@ emptyDir(distDir)
     //   });
     // }
   });
-// TODO: 筛选掉工作日和已放映的片场
+
 const interpretDomNOutput = (dom) => {
   const itemList = dom.window.document.querySelectorAll(".doulist-item");
 
@@ -107,16 +119,28 @@ const interpretDomNOutput = (dom) => {
       url: anchor?.href?.trim(),
       rate: rate?.textContent?.trim(),
       abst: desc?.textContent?.trim().replace(/(\n +)+/g, "\n"),
-      location: comment?.textContent?.trim().replace("评语：", ""),
+      dateNLoc: comment?.textContent?.trim().replace("评语：", ""),
     };
 
     /**
      * @type {[string, string][]}
      * @example [ [ '10月12日', '百子湾厅' ], [ '10月30日', '2号厅' ] ]
      */
-    const dateLocEntries = textCollection?.location
+    const dateLocEntries = textCollection?.dateNLoc
       ?.split("\n")
       ?.map((entry) => entry.split(" "));
+
+    if (!dateLocEntries) return;
+
+    dateLocEntries.forEach((entry) => {
+      const dayObj = strToDay(entry[0]);
+
+      entry[0] += ` ${WEEK_DAYS[dayObj.day()]}`;
+    });
+
+    textCollection.dateNLoc = dateLocEntries
+      .map((entry) => entry.join(" "))
+      .join("\n");
 
     const textArr = Object.values(textCollection);
 
@@ -127,10 +151,27 @@ ${textArr.join("\n")}
 --------------------------------
 `;
 
-    const goodOrBad = textCollection.rate >= 8 ? "good" : "bad";
+    let goodOrBad = "good";
+
+    if (
+      textCollection.rate < 8 ||
+      !dateLocEntries.some(
+        ([date, loc]) => !loc.includes("百子湾") && strToDay(date) > now
+      )
+    ) {
+      goodOrBad = "bad";
+    }
 
     prom = prom.then(() => appendFile(outputFilePath[goodOrBad], text));
   });
 
   return prom;
+};
+
+const strToDay = (str) => {
+  let ret = dayjs(str, ["MM月DD日", "M月D日", "M月DD日", "MM月D日"]);
+
+  if (now.month() === 11 && ret.month() === 0) ret = ret.year(now.year() + 1);
+
+  return ret;
 };
