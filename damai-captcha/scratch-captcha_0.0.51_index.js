@@ -302,11 +302,13 @@ var scratchCaptcha = (function () {
             ? c.addEventListener(a, t, n)
             : c.attachEvent && c.attachEvent("on" + a, t);
       },
-      ajax: function (c) {
-        c = c || {};
+      ajax: function (reqOpt) {
+        reqOpt = reqOpt || {};
         var a = [];
-        for (var t in c.data)
-          a.push(encodeURIComponent(t) + "=" + encodeURIComponent(c.data[t]));
+        for (var t in reqOpt.data)
+          a.push(
+            encodeURIComponent(t) + "=" + encodeURIComponent(reqOpt.data[t])
+          );
         a.push(("v=" + Math.random()).replace(".", ""));
         var n,
           e = a.join("&"),
@@ -317,34 +319,37 @@ var scratchCaptcha = (function () {
             if (4 == o.readyState) {
               var a = o.status;
               a >= 200 && 300 > a
-                ? c.success && c.success(o.responseText, o.responseXML, o)
-                : i || ((i = !0), c.error && c.error(a));
+                ? reqOpt.success &&
+                  reqOpt.success(o.responseText, o.responseXML, o)
+                : i || ((i = !0), reqOpt.error && reqOpt.error(a));
             }
           }),
           (o.onerror = function () {
-            i || ((i = !0), c.error && c.error(status));
+            i || ((i = !0), reqOpt.error && reqOpt.error(status));
           }),
-          c.sign)
+          reqOpt.sign)
         )
           try {
             n =
               window.etSign && "function" == typeof window.etSign
-                ? window.etSign("GET" === c.type ? c.url + "?" + e : c.url)
+                ? window.etSign(
+                    "GET" === reqOpt.type ? reqOpt.url + "?" + e : reqOpt.url
+                  )
                 : "nosgn";
           } catch (r) {
             n = "nosgn";
           }
-        "GET" == c.type
-          ? (o.open("GET", c.url + "?" + e, !0),
+        "GET" == reqOpt.type
+          ? (o.open("GET", reqOpt.url + "?" + e, !0),
             n && o.setRequestHeader("bx_et", n),
             n && o.setRequestHeader("bx-et", "1"),
-            c.ppSign && o.setRequestHeader("bx-pp", c.ppSign),
+            reqOpt.ppSign && o.setRequestHeader("bx-pp", reqOpt.ppSign),
             o.send(null))
-          : "POST" == c.type &&
-            (o.open("POST", c.url, !0),
+          : "POST" == reqOpt.type &&
+            (o.open("POST", reqOpt.url, !0),
             n && o.setRequestHeader("bx_et", n),
             n && o.setRequestHeader("bx-et", "1"),
-            c.ppSign && o.setRequestHeader("bx-pp", c.ppSign),
+            reqOpt.ppSign && o.setRequestHeader("bx-pp", reqOpt.ppSign),
             o.setRequestHeader(
               "Content-Type",
               "application/x-www-form-urlencoded"
@@ -3508,7 +3513,7 @@ var scratchCaptcha = (function () {
       })(),
       U = (function () {
         function c(c) {
-          var a = this;
+          var cThis = this;
           (this.getRand = function (c, t) {
             var n = (window._config_ || {}).nonce;
             if (
@@ -3524,33 +3529,39 @@ var scratchCaptcha = (function () {
             try {
               return window.crypto.genRandomValues(c, t);
             } catch (e) {
-              return f.log(e.message, 14, a.options.token), "run_error";
+              return f.log(e.message, 14, cThis.options.token), "run_error";
             }
           }),
             (this.getQuestion = function (c) {
-              var t = a.options,
-                n = t.questionUrl,
-                i = t.token,
-                o = t.appKey,
-                h = t.x5secdata,
-                s = t.initFail,
-                g = t.language,
-                l = t.color,
-                d = t.isCapGrid,
-                u = t.captchaConfigInfo,
-                q = t.mini;
-              if (c && !a.FYModule && a.penddingTime < 1e3)
+              var aOpt = cThis.options,
+                n = aOpt.questionUrl,
+                i = aOpt.token,
+                o = aOpt.appKey,
+                x5secdata = aOpt.x5secdata,
+                s = aOpt.initFail,
+                g = aOpt.language,
+                l = aOpt.color,
+                d = aOpt.isCapGrid,
+                u = aOpt.captchaConfigInfo,
+                q = aOpt.mini;
+              if (c && !cThis.FYModule && cThis.penddingTime < 1e3)
                 setTimeout(function () {
-                  (a.penddingTime += 100), a.getQuestion(!0);
+                  (cThis.penddingTime += 100), cThis.getQuestion(!0);
                 }, 100);
               else {
-                a.resetTimer &&
-                  (clearTimeout(a.resetTimer), (a.resetTimer = null));
-                var b = a.getData(!0).ua,
-                  k = { token: i, appKey: o, ua: b, x5secdata: h, language: g };
+                cThis.resetTimer &&
+                  (clearTimeout(cThis.resetTimer), (cThis.resetTimer = null));
+                var b = cThis.getData(!0).ua,
+                  k = {
+                    token: i,
+                    appKey: o,
+                    ua: b,
+                    x5secdata: x5secdata,
+                    language: g,
+                  };
                 d && ((k.captchaConfigInfo = JSON.stringify(u)), (k.n = 1)),
                   d && q && (k.mini = !0),
-                  (k._rand = a.getRand(b, 1)),
+                  (k._rand = cThis.getRand(b, 1)),
                   f.randomUUID(null, "_$SU"),
                   f.ajax({
                     url: "" + n,
@@ -3562,7 +3573,7 @@ var scratchCaptcha = (function () {
                         c && "string" == typeof c && (c = JSON.parse(c)),
                         c && c.success
                           ? c.code === e.success
-                            ? ((a.encryptToken = c.data.encryptToken),
+                            ? ((cThis.encryptToken = c.data.encryptToken),
                               c.data.tag ||
                                 (c.data.tag =
                                   p[l] || r[Math.floor(6 * Math.random())]),
@@ -3584,24 +3595,24 @@ var scratchCaptcha = (function () {
               var t = c.selectedImageId,
                 n = c.selectedImageIndex,
                 i = c.displayedImages,
-                o = a.options,
-                r = o.replaceUrl,
-                p = o.token,
-                h = o.appKey,
-                s = o.x5secdata,
-                g = o.ppFun,
-                l = o.language,
-                d = o.isCapGrid,
-                u = o.mini,
-                q = a.getData(),
+                oOpt = cThis.options,
+                r = oOpt.replaceUrl,
+                p = oOpt.token,
+                h = oOpt.appKey,
+                sX5secdata = oOpt.x5secdata,
+                g = oOpt.ppFun,
+                l = oOpt.language,
+                d = oOpt.isCapGrid,
+                u = oOpt.mini,
+                q = cThis.getData(),
                 b = q.ua,
                 k = {
                   token: p,
                   appKey: h,
                   ua: b,
                   umidToken: q.umidToken,
-                  encryptToken: a.encryptToken,
-                  x5secdata: s,
+                  encryptToken: cThis.encryptToken,
+                  x5secdata: sX5secdata,
                   language: l,
                   selectedImageId: t,
                   selectedImageIndex: n,
@@ -3615,8 +3626,8 @@ var scratchCaptcha = (function () {
                 z && (k.cookieDisabled = z),
                 w !== undefined && (k.ppt = w),
                 d && u && (k.mini = !0),
-                (k._rand = a.getRand(b, 2)),
-                a.replaceRequest(),
+                (k._rand = cThis.getRand(b, 2)),
+                cThis.replaceRequest(),
                 f.ajax({
                   url: "" + r,
                   type: "GET",
@@ -3630,12 +3641,12 @@ var scratchCaptcha = (function () {
                       c && "string" == typeof c && (c = JSON.parse(c)),
                       c && c.success
                         ? c.code === e.success
-                          ? ((a.encryptToken = c.data.encryptToken),
-                            a.replaceSuccess(),
+                          ? ((cThis.encryptToken = c.data.encryptToken),
+                            cThis.replaceSuccess(),
                             void y.fire("getReplaceSuccess", c))
-                          : (a.replaceFail(),
+                          : (cThis.replaceFail(),
                             y.fire("getReplaceFail", c.code),
-                            a.replaceRePow(),
+                            cThis.replaceRePow(),
                             g &&
                               g(
                                 p,
@@ -3652,18 +3663,18 @@ var scratchCaptcha = (function () {
                               ),
                             void (305 !== c.code
                               ? setTimeout(function () {
-                                  a.replaceRefresh(), y.fire("reset");
+                                  cThis.replaceRefresh(), y.fire("reset");
                                 }, 300)
                               : location.reload()))
-                        : (a.replaceFail(),
+                        : (cThis.replaceFail(),
                           y.fire("getReplaceFail", 500),
                           void setTimeout(function () {
-                            a.replaceRefresh(), y.fire("reset");
+                            cThis.replaceRefresh(), y.fire("reset");
                           }, 300))
                     );
                   },
                   error: function (c) {
-                    a.replaceFail(),
+                    cThis.replaceFail(),
                       y.fire("getReplaceFail", 500),
                       setTimeout(function () {
                         y.fire("reset");
@@ -3679,25 +3690,25 @@ var scratchCaptcha = (function () {
                 r = c.displayedImages,
                 p = c.selectedImageIds,
                 h = void 0 === p ? "[]" : p,
-                s = a.options,
-                g = s.verifyUrl,
-                l = s.token,
-                d = s.appKey,
-                u = s.x5secdata,
-                q = s.verifySuccess,
-                b = s.verifyFail,
-                k = s.ppFun,
-                m = s.isCapGrid,
-                v = s.mini,
-                z = a.getData(),
+                sOpt = cThis.options,
+                g = sOpt.verifyUrl,
+                l = sOpt.token,
+                d = sOpt.appKey,
+                uX5secdata = sOpt.x5secdata,
+                q = sOpt.verifySuccess,
+                b = sOpt.verifyFail,
+                k = sOpt.ppFun,
+                m = sOpt.isCapGrid,
+                v = sOpt.mini,
+                z = cThis.getData(),
                 w = z.ua,
                 x = {
                   token: l,
                   appKey: d,
                   ua: w,
                   umidToken: z.umidToken,
-                  encryptToken: a.encryptToken,
-                  x5secdata: u,
+                  encryptToken: cThis.encryptToken,
+                  x5secdata: uX5secdata,
                   time: i,
                 };
               m
@@ -3713,7 +3724,7 @@ var scratchCaptcha = (function () {
               S && (x.partitionedLabel = S),
                 C && (x.cookieDisabled = C),
                 E !== undefined && (x.ppt = E),
-                (x._rand = a.getRand(w, 3)),
+                (x._rand = cThis.getRand(w, 3)),
                 f.randomUUID(null, "_$PS"),
                 f.ajax({
                   url: "" + g,
@@ -3730,16 +3741,16 @@ var scratchCaptcha = (function () {
                         ? c.code === e.success
                           ? (y.fire("verifySuccess", i),
                             void (q && q(c.code, n)))
-                          : (a.verifyFail(),
+                          : (cThis.verifyFail(),
                             y.fire("verifyFail", c.code),
-                            (a.resetTimer = setTimeout(function () {
+                            (cThis.resetTimer = setTimeout(function () {
                               305 !== c.code
-                                ? (a.verifyRefresh(), y.fire("reset"))
+                                ? (cThis.verifyRefresh(), y.fire("reset"))
                                 : //  失败
                                   location.reload();
                             }, 3e3)),
                             b && b(c.code),
-                            a.verifyRePow(),
+                            cThis.verifyRePow(),
                             void (
                               k &&
                               k(
@@ -3756,18 +3767,18 @@ var scratchCaptcha = (function () {
                                 }
                               )
                             ))
-                        : (a.verifyFail(),
+                        : (cThis.verifyFail(),
                           y.fire("verifyFail", 500),
-                          (a.resetTimer = setTimeout(function () {
-                            a.verifyRefresh(), y.fire("reset");
+                          (cThis.resetTimer = setTimeout(function () {
+                            cThis.verifyRefresh(), y.fire("reset");
                           }, 3e3)),
                           void (b && b(500)))
                     );
                   },
                   error: function (c) {
-                    a.verifyFail(),
+                    cThis.verifyFail(),
                       y.fire("verifyFail", 500),
-                      (a.resetTimer = setTimeout(function () {
+                      (cThis.resetTimer = setTimeout(function () {
                         y.fire("reset");
                       }, 3e3)),
                       b && b(500);
@@ -3882,8 +3893,8 @@ var scratchCaptcha = (function () {
             );
           }),
           (c.prototype.init = function () {
-            var c = this,
-              a = this.options;
+            var cThis = this,
+              aOpt = this.options;
             window.AWSC
               ? (this.loadET(), this.loadFireye())
               : f.loadScript(
@@ -3891,30 +3902,30 @@ var scratchCaptcha = (function () {
                   function (t, n) {
                     if ("ok" === t) {
                       try {
-                        a.jsLoadReport &&
-                          a.jsLoadReport(
+                        aOpt.jsLoadReport &&
+                          aOpt.jsLoadReport(
                             "Success",
                             "AWSC",
                             "AWSC.js_load_success:" + n
                           ),
-                          c.loadET(),
-                          c.loadFireye();
+                          cThis.loadET(),
+                          cThis.loadFireye();
                       } catch (e) {
                         f.log(
                           "初始化awsc失败：" + e.message,
                           "action",
-                          c.options.token
+                          cThis.options.token
                         );
                       }
                       return !1;
                     }
-                    a.jsLoadReport &&
-                      a.jsLoadReport(
+                    aOpt.jsLoadReport &&
+                      aOpt.jsLoadReport(
                         "Error",
                         "AWSC",
                         "AWSC.js_load_" + t + ":" + n
                       ),
-                      f.log("加载awsc出错", "action", c.options.token);
+                      f.log("加载awsc出错", "action", cThis.options.token);
                   },
                   1e4,
                   3
@@ -4763,15 +4774,15 @@ var scratchCaptcha = (function () {
       }
       return (
         (c.prototype.init = function () {
-          var c = this,
-            a = c.question,
-            t = c.puzzle,
-            e = c.result,
-            i = c.slider,
-            o = c.grid,
-            r = c.canvas,
-            p = c.request,
-            h = c.options,
+          var cThis = this,
+            a = cThis.question,
+            t = cThis.puzzle,
+            e = cThis.result,
+            i = cThis.slider,
+            o = cThis.grid,
+            r = cThis.canvas,
+            p = cThis.request,
+            h = cThis.options,
             s = "";
           e.init(),
             "connect" === n[h.type] ||
