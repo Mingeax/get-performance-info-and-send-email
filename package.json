@@ -25,7 +25,9 @@
     "jsdom": "^27.2.0",
     "minimist": "^1.2.8",
     "nodemailer": "^7.0.10",
-    "puppeteer": "^24.21.0"
+    "puppeteer": "^24.21.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.5"
