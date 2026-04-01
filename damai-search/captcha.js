@@ -48,8 +48,14 @@ export class Crawler {
 
     this.#targetUrl = targetUrl;
 
-    // this.#page?.close();
+    this.#page?.close();
     this.#page = await this.#browser.newPage();
+
+    // const cookies = await this.#page.cookies();
+    // await this.#page.deleteCookie(...cookies);
+
+    const client = await this.#page.target().createCDPSession();
+    await client.send("Network.clearBrowserCookies");
 
     this.#dataCaptureProm = new Promise((resolve) => {
       console.log("🌞 -- captcha.js:69 -- listenToPage -- resolve");
@@ -127,13 +133,13 @@ export class Crawler {
 const handleResponse = async (response, resolve) => {
   const url = response.url();
 
-  console.log("🌞 -- captcha.js:102 -- handleResponse -- url:", url);
+  // console.log("🌞 -- captcha.js:102 -- handleResponse -- url:", url);
 
   if (
     url.includes("search.damai.cn/searchajax.html?") &&
     response.status() === 200
   ) {
-    console.log("🌞 -- captcha.js:103 -- handleResponse -- url:", url);
+    // console.log("🌞 -- captcha.js:103 -- handleResponse -- url:", url);
     try {
       const data = await response.json();
       if (data) {
