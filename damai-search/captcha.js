@@ -5,14 +5,14 @@ import { writeFileSync } from "fs";
 puppeteer.use(StealthPlugin());
 
 export class Crawler {
-  constructor(browser, targetUrl) {
+  constructor(browser) {
     this.#browser = browser;
-    this.#targetUrl = targetUrl;
   }
 
   #browser;
   #page;
   #targetUrl;
+  #dataCaptureProm;
 
   static async init() {
     const browser = await puppeteer.launch({
@@ -43,18 +43,52 @@ export class Crawler {
     return;
   }
 
-  async crawl(targetUrl) {
-    if (!this.#browser) return;
+  async crawl(targetUrl = this.#targetUrl) {
+    if (!this.#browser) throw new Error("Browser instance is not initialized.");
 
-    if (!targetUrl) {
-      targetUrl = this.#targetUrl;
-    } else {
-      this.#targetUrl = targetUrl;
-    }
+    this.#targetUrl = targetUrl;
+
+    // this.#page?.close();
+    this.#page = await this.#browser.newPage();
+
+    this.#dataCaptureProm = new Promise((resolve) => {
+      console.log("🌞 -- captcha.js:69 -- listenToPage -- resolve");
+
+      this.#page.removeAllListeners(["response"]);
+      this.#page.on("response", (response) => {
+        handleResponse(response, resolve);
+      });
+    });
+
+    this.#dataCaptureProm.finally(() => {
+      this.#page.removeAllListeners(["response"]);
+    });
+    this.#dataCaptureProm.then((res) => {
+      console.log("🌞 -- captcha.js:65 -- Crawler -- crawl -- res:", res);
+    });
 
     await this.#page.goto(targetUrl);
 
-    return listenToPage(this.#page);
+    // TODO: 可以增加失败重试逻辑
+    try {
+      // 设置 5 分钟超时
+      console.log(
+        "🌞 -- captcha.js:74 -- Crawler -- crawl -- this.#dataCaptureProm:",
+        this.#dataCaptureProm,
+      );
+      const jsonData = await Promise.race([
+        this.#dataCaptureProm,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Timeout")), 300000),
+        ),
+      ]);
+
+      console.log("成功截获 JSON 数据！");
+
+      return jsonData;
+    } catch (err) {
+      console.error("抓取失败或超时:", err.message);
+    }
   }
 
   dispose() {
@@ -63,39 +97,32 @@ export class Crawler {
   }
 }
 
-const listenToPage = async (page) => {
-  // TODO: 把prom抽出成公共属性, 每次调用时更新
-  const dataCaptureProm = new Promise((resolve) => {
-    console.log("🌞 -- captcha.js:69 -- listenToPage -- resolve");
+// const listenToPage = async (page, dataCaptureProm) => {
+//   // 同时等待验证通过和数据捕获
+//   try {
+//     // 设置 5 分钟超时
+//     const jsonData = await Promise.race([
+//       dataCaptureProm,
+//       new Promise((_, reject) =>
+//         setTimeout(() => reject(new Error("Timeout")), 300000),
+//       ),
+//     ]);
 
-    page.on("response", (response) => handleResponse(response, resolve));
-  });
+//     console.log("成功截获 JSON 数据！");
 
-  // 同时等待验证通过和数据捕获
-  try {
-    // 设置 5 分钟超时
-    const jsonData = await Promise.race([
-      dataCaptureProm,
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout")), 300000)
-      ),
-    ]);
+//     return jsonData;
 
-    console.log("成功截获 JSON 数据！");
-
-    return jsonData;
-
-    // 保存原始 JSON 数据
-    writeFileSync(
-      "damai_raw_data.json",
-      JSON.stringify(jsonData, null, 2),
-      "utf-8"
-    );
-    console.log("数据已保存至 damai_raw_data.json");
-  } catch (err) {
-    console.error("抓取失败或超时:", err.message);
-  }
-};
+//     // 保存原始 JSON 数据
+//     writeFileSync(
+//       "damai_raw_data.json",
+//       JSON.stringify(jsonData, null, 2),
+//       "utf-8",
+//     );
+//     console.log("数据已保存至 damai_raw_data.json");
+//   } catch (err) {
+//     console.error("抓取失败或超时:", err.message);
+//   }
+// };
 
 const handleResponse = async (response, resolve) => {
   const url = response.url();
