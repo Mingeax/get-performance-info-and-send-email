@@ -12,7 +12,7 @@ import { Crawler } from "./captcha.js";
 import { remove, ensureDir, emptyDir, outputFile } from "fs-extra/esm";
 
 // TODO: bug: 演出条目有可能重复,疑似发生在页首或页尾
-// TODO: 绕过滑块验证码,现采取Browserless方案, 让用户主动手动过码
+// TODO: 绕过滑块验证码,暂采取Browserless方案, 让用户主动手动过码
 
 // 也是主搜索页
 const baseUrl = "https://search.damai.cn/searchajax.html";
@@ -36,120 +36,25 @@ export async function fetchAllPages() {
     ["order", "2"], // 时间顺序排列
   ]);
 
-  // const mobileUrlObj = new URL(baseUrl);
-  // const setMobileQueries = setURLQueries(mobileUrlObj, [
-  //   [
-  //     "args",
-  //     {
-  //       comboConfigRule: "true",
-  //       sortType: "10",
-  //       latitude: "0",
-  //       longitude: "0",
-  //       currentCityId: "852",
-  //       dateType: "5",
-  //       startDate: "2025-12-03",
-  //       endDate: "2025-12-18",
-  //       artisteId: "-1",
-  //       firstLevelSelection: "",
-  //       secondLevelSelection: "",
-  //       categoryId: "0",
-  //       comboCityId: "852",
-  //       platform: "8",
-  //       comboChannel: "2",
-  //       dmChannel: "damai@damaih5_h5",
-  //     },
-  //   ],
-  //   ["patternName", "category_all"],
-  //   ["patternVersion", "4.1"],
-  //   [
-  //     "dr",
-  //     [
-  //       {
-  //         targetSectionId: "f332197e-b686-4f4a-bf06-43d893114419",
-  //         targetLayerId: "0cc973fd-4761-433f-a2dc-c92060264703",
-  //       },
-  //     ],
-  //   ],
-  //   ["platform", "8"],
-  //   ["comboChannel", "2"],
-  //   ["dmChannel", "damai@damaih5_h5"],
-  //   ["pageIndex", "0"],
-  //   ["pageSize", "20"],
-  // ]);
-
   const nameBlackKeywords = blackKeywords.name;
   const nameWhiteKeywords = whiteKeywords.name;
   const venueBlackKeywords = blackKeywords.venue;
   const venueWhiteKeywords = whiteKeywords.venue;
 
-  const crawler = await Crawler.init();
-  await crawler.openPage();
+  let crawler;
+  try {
+    crawler = await Crawler.init();
+    await crawler.openPage();
 
-  while (hasMore) {
+    while (hasMore) {
     setDesktopQueries([
       ["pageSize", pageSize],
       ["currPage", curPage],
     ]);
 
-    // console.log(`请求第${curPage}页...`);
-
-    // const browser = await puppeteer.launch();
-    // const page = await browser.newPage();
-    // await page.goto("https://m.damai.cn/shows/category.html");
-
-    // const locatior = page.locator(
-    //   ".filter-header-item.log-filter-panel-time-range.selected"
-    // );
-
-    // locatior.click("calendar-day calendar-confirm-log");
-
-    // const desktopRes = await fetch(desktopUrlObj.toString(), {
-    //   headers: {
-    //     accept: "application/json, text/plain, */*",
-    //     "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-    //     cookie:
-    //       "loginkey=048e6cd8cda7401aa4f62640dd99fc48_1_1; user_id=651080268; x5sectag=493425; x5sec=7b22733b32223a2263613861343234643933643863656337222c22617365727665723b33223a22307c434b586372386b47454a3736334e7a362f2f2f2f2f774561447a49794d6a45794d7a59354e7a637a4e446b374d53494b59324677633278705a4756324d6a445438742b6142513d3d227d",
-    //     Referer: "https://search.damai.cn/search.htm",
-    //   },
-    // });
-
-    // const mobileRes = await new Promise((res, rej) => {
-    //   setTimeout(() => {
-    //     fetch(
-    //       "https://mtop.damai.cn/h5/mtop.damai.mec.aristotle.get/3.0/?jsv=2.7.5&appKey=12574478&t=1764493550220&sign=85c79dd72ed4b55d531f46c4bcc3df79&api=mtop.damai.mec.aristotle.get&v=3.0&H5Request=true&type=json&timeout=10000&dataType=json&valueType=string&forceAntiCreep=true&AntiCreep=true&data=%7B%22args%22%3A%22%7B%5C%22comboConfigRule%5C%22%3A%5C%22true%5C%22%2C%5C%22sortType%5C%22%3A%5C%222%5C%22%2C%5C%22latitude%5C%22%3A%5C%220%5C%22%2C%5C%22longitude%5C%22%3A%5C%220%5C%22%2C%5C%22groupId%5C%22%3A%5C%222346%5C%22%2C%5C%22dateType%5C%22%3A%5C%225%5C%22%2C%5C%22startDate%5C%22%3A%5C%222025-12-18%5C%22%2C%5C%22endDate%5C%22%3A%5C%222025-12-20%5C%22%2C%5C%22artisteId%5C%22%3A%5C%22-1%5C%22%2C%5C%22firstLevelSelection%5C%22%3A%5C%22g_0%5C%22%2C%5C%22secondLevelSelection%5C%22%3A%5C%22%5C%22%2C%5C%22pageIndex%5C%22%3A3%2C%5C%22pageSize%5C%22%3A15%2C%5C%22comboCityId%5C%22%3A%5C%22852%5C%22%2C%5C%22platform%5C%22%3A%5C%228%5C%22%2C%5C%22comboChannel%5C%22%3A%5C%222%5C%22%2C%5C%22dmChannel%5C%22%3A%5C%22damai%40damaih5_h5%5C%22%7D%22%2C%22patternName%22%3A%22category_concert%22%2C%22patternVersion%22%3A%224.1%22%2C%22dr%22%3A%22%5B%7B%5C%22targetSectionId%5C%22%3A%5C%22f67a51f2-120c-4c90-a444-6367567e7e4c%5C%22%2C%5C%22targetLayerId%5C%22%3A%5C%22e2376640-9de8-4179-a821-4f0bd265a446%5C%22%7D%5D%22%2C%22platform%22%3A%228%22%2C%22comboChannel%22%3A%222%22%2C%22dmChannel%22%3A%22damai%40damaih5_h5%22%7D",
-    //       {
-    //         headers: {
-    //           accept: "application/json",
-    //           "accept-language":
-    //             "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-    //           "content-type": "application/x-www-form-urlencoded",
-    //         },
-    //         referrer: "https://m.damai.cn/shows/category.html",
-    //       }
-    //     ).then(res, rej);
-    //   }, 2000);
-    // });
-
-    // const text = await res1.text();
-
-    // console.log("🌞 -- req.js:107 -- fetchAllPages -- text:", text);
-
-    // const res = await fetch(desktopUrlObj.toString(), {
-    //   headers: {
-    //     "User-Agent":
-    //       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
-    //     accept: "application/json, text/plain, */*",
-    //     referer: "https://search.damai.cn/search.htm",
-    //   },
-    // });
-
     const json = await crawler.crawl(desktopUrlObj.toString());
 
-    console.log(
-      "🌞 -- req.js:109 -- fetchAllPages -- json:",
-      json
-      // json.data.nodes[0].nodes[0].nodes[0]
-    );
+    console.log("🌞 -- req.js:109 -- fetchAllPages -- json:", json);
 
     const { resultData } = json.pageData;
 
@@ -183,9 +88,7 @@ export async function fetchAllPages() {
 
         const isEndNextYear = endParts.length === 3;
 
-        const sYear = startParts[0];
-        const sMonth = startParts[1];
-        const sDate = startParts[2];
+        const [sYear, sMonth, sDate] = startParts
 
         const eYear = isEndNextYear ? endParts[0] : sYear;
         const eMonth = isEndNextYear ? 0 : endParts[0];
@@ -289,26 +192,28 @@ export async function fetchAllPages() {
       hasMore = true;
     } else {
       hasMore = false;
-      crawler.dispose();
     }
+    }
+
+    console.log(
+      "🌞 -- req.js:300 -- fetchAllPages -- goodPerformances:",
+      goodPerformances
+    );
+
+    await outputFile(
+      outputFilePath.good,
+      JSON.stringify(goodPerformances, null, "\t")
+    );
+
+    await outputFile(
+      outputFilePath.bad,
+      JSON.stringify(badPerformances, null, "\t")
+    );
+
+    console.log("请求全部完成.");
+  } finally {
+    if (crawler) await crawler.dispose();
   }
-
-  console.log(
-    "🌞 -- req.js:300 -- fetchAllPages -- goodPerformances:",
-    goodPerformances
-  );
-
-  await outputFile(
-    outputFilePath.good,
-    JSON.stringify(goodPerformances, null, "\t")
-  );
-
-  await outputFile(
-    outputFilePath.bad,
-    JSON.stringify(badPerformances, null, "\t")
-  );
-
-  console.log("请求全部完成.");
 }
 
 // 在这里写解析的键值对

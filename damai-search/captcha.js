@@ -48,7 +48,7 @@ export class Crawler {
 
     this.#targetUrl = targetUrl;
 
-    this.#page?.close();
+    await this.#page?.close().catch(() => {});
     this.#page = await this.#browser.newPage();
 
     // const cookies = await this.#page.cookies();
@@ -75,18 +75,18 @@ export class Crawler {
 
     await this.#page.goto(targetUrl);
 
-    // TODO: 可以增加失败重试逻辑
+    let timeoutId;
+    const timeoutProm = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error("Timeout")), 300000);
+    });
     try {
-      // 设置 5 分钟超时
       console.log(
         "🌞 -- captcha.js:74 -- Crawler -- crawl -- this.#dataCaptureProm:",
         this.#dataCaptureProm,
       );
       const jsonData = await Promise.race([
         this.#dataCaptureProm,
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Timeout")), 300000),
-        ),
+        timeoutProm,
       ]);
 
       console.log("成功截获 JSON 数据！");
@@ -94,12 +94,24 @@ export class Crawler {
       return jsonData;
     } catch (err) {
       console.error("抓取失败或超时:", err.message);
+    } finally {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
     }
   }
 
-  dispose() {
-    this.#page.removeAllListeners(["response"]);
-    this.#browser.close();
+  async dispose() {
+    this.#page?.removeAllListeners(["response"]);
+    try {
+      if (this.#page && !this.#page.isClosed()) {
+        await this.#page.close().catch(() => {});
+      }
+    } finally {
+      this.#page = undefined;
+      if (this.#browser) {
+        await this.#browser.close().catch(() => {});
+        this.#browser = undefined;
+      }
+    }
   }
 }
 
