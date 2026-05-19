@@ -1,8 +1,8 @@
 export default {
   email: {
-    service: "smtp.qq.com",
-    user: "wsyym@qq.com",
-    accessToken: "orvtvemugyozbgcb",
+    service: "",
+    user: "",
+    accessToken: "",
     title: "",
     content: {
       text: "",
