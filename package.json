@@ -30,6 +30,7 @@
     "puppeteer-extra-plugin-stealth": "^2.11.2"
   },
   "devDependencies": {
+    "@types/jsdom": "^28.0.3",
     "@types/minimist": "^1.2.5"
   }
 }

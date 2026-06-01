@@ -5,9 +5,10 @@ import customParseFormat from "dayjs/plugin/customParseFormat.js";
 import localeData from "dayjs/plugin/localeData.js";
 import "dayjs/locale/zh-cn.js";
 import { appendFile } from "node:fs/promises";
-import { resolve, dirname } from "node:path";
-import { outputFileName, outputFilePath } from "./config.js";
+import { resolve } from "node:path";
+import { outputFilePath } from "./config.js";
 
+// TODO: 用户手动关闭验证码弹窗时, 退出大麦进程
 dayjs.extend(customParseFormat);
 dayjs.extend(localeData);
 dayjs.locale("zh-cn");
@@ -67,34 +68,6 @@ emptyDir(distDir)
         startNum += 25;
       }
     }
-
-    // while (hasMore) {
-    //   break;
-    //   console.log("🌞 -- main.js:26 -- hasMore:", hasMore);
-
-    //   urlObj.searchParams.set("start", startNum);
-
-    //   fetch(urlObj.toString(), {
-    //     // headers: {
-    //     // },
-    //   }).then((res) => {
-    //     const html = res.text();
-
-    //     console.log("🌞 -- main.js:37 -- html:", html);
-
-    //     const dom = new JSDOM(html);
-
-    //     try {
-    //       console.log("🌞 -- main.js:37 -- dom:", dom);
-    //       interpretDomNOutput(dom);
-    //     } catch (e) {
-    //       console.log("🌞 -- main.js:37 -- e:", e);
-    //       hasMore = false;
-    //     }
-
-    //     startNum += 25;
-    //   });
-    // }
   });
 
 const interpretDomNOutput = (dom) => {
