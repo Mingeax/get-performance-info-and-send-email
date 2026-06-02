@@ -12,7 +12,9 @@ import { Crawler } from "./captcha.js";
 import { remove, ensureDir, emptyDir, outputFile } from "fs-extra/esm";
 
 // TODO: bug: 演出条目有可能重复,疑似发生在页首或页尾
-// TODO: 绕过滑块验证码,暂采取Browserless方案, 让用户主动手动过码
+// TODO: 做权重式黑白名单
+// TODO: 把演出和电影分两封邮件发送, 避免单个邮件过长, 不便阅读
+// 绕过滑块验证码,暂采取Browserless方案, 让用户主动手动过码
 
 // 也是主搜索页
 const baseUrl = "https://search.damai.cn/searchajax.html";
@@ -157,7 +159,7 @@ export async function fetchAllPages() {
         price_str,
         showtime,
         showstatus,
-        detailsWebPage: `https://detail.damai.cn/item.htm?id=${id}`,
+        detailsWebPage: `https://detail.damai.cn/item.htm?id=${id} `,
       };
 
       if (actors) recordItem.actors = actors;
