@@ -13,10 +13,6 @@ dayjs.extend(customParseFormat);
 dayjs.extend(localeData);
 dayjs.locale("zh-cn");
 
-// console.log(dayjs.weekdays());
-// console.log(dayjs.localeData());
-// console.log(dayjs().localeData());
-
 const WEEK_DAYS = dayjs.weekdays();
 
 const baseUrl = "https://www.douban.com/doulist/111299960/";

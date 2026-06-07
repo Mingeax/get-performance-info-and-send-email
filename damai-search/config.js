@@ -49,3 +49,9 @@ export const outputFilePath = {
   bad: resolve(distDir, `${outputFileName.bad}.txt`),
   good: resolve(distDir, `${outputFileName.good}.txt`),
 };
+
+export const dateSpanOptions = {
+  daysFromToday: "30", // 优先于stDate和etDate
+  stDate: "2026-06-05",
+  etDate: "2026-07-01",
+};

@@ -6,14 +6,15 @@
   "main": "main.js",
   "engines": {
     "node": ">=20",
-    "pnpm": ">=8"
+    "pnpm": ">=8",
+    "npm": ">=9.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "node main.js --dist dist",
-    "serve:damai": "node damai-search/main.js",
-    "serve:douban": "node douban-search/main.js --dist test",
-    "serve:email": "node auto-email/main.js"
+    "start": "node main.js --dist dist",
+    "start:damai": "node damai-search/main.js",
+    "start:douban": "node douban-search/main.js --dist test",
+    "start:email": "node auto-email/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
