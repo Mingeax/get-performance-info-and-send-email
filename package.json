@@ -10,6 +10,7 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
+    "prepare": "node scripts/setup.js",
     "start": "node main.js --dist dist",
     "start:damai": "node damai-search/main.js",
     "start:douban": "node douban-search/main.js --dist test",

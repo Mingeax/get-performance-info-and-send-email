@@ -16,7 +16,6 @@ import customParseFormat from "dayjs/plugin/customParseFormat.js";
 
 // TODO: bug: 演出条目有可能重复,疑似发生在页首或页尾
 // TODO: 做权重式黑白名单
-// TODO: 把演出和电影分两封邮件发送, 避免单个邮件过长, 不便阅读
 // TODO: 写测试脚本和用例
 // TODO: 用主脚本命令传参的方式, 重构start:damai,start:douban,start:email三个命令
 // 绕过滑块验证码,暂采取Browserless方案, 让用户主动手动过码

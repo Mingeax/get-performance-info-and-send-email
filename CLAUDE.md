@@ -10,12 +10,12 @@ Node.js 脚本集合，从演艺平台（大麦网、豆瓣豆列）抓取演出
 
 ```bash
 # 全流程运行（并发爬取，完成后发送邮件）
-pnpm serve
+pnpm start
 
 # 单独运行各模块
-pnpm serve:damai    # 大麦网搜索
-pnpm serve:douban   # 豆瓣电影列表
-pnpm serve:email    # 发送邮件（需先有 dist/ 输出文件）
+pnpm start:damai    # 大麦网搜索
+pnpm start:douban   # 豆瓣电影列表
+pnpm start:email    # 发送邮件（需先有 dist/ 输出文件）
 ```
 
 ## 架构

@@ -3,6 +3,7 @@ log.txt
 bad_performances.json
 good_performances.json
 .DS_Store
+auto-email/secrets.js
 
 # Logs
 logs

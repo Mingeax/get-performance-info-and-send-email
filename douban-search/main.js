@@ -8,7 +8,6 @@ import { appendFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { outputFilePath } from "./config.js";
 
-// TODO: 用户手动关闭验证码弹窗时, 退出大麦进程
 dayjs.extend(customParseFormat);
 dayjs.extend(localeData);
 dayjs.locale("zh-cn");
