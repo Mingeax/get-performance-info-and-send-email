@@ -2,6 +2,7 @@ import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { writeFileSync } from "fs";
 // TODO: 写测试命令, 只爬数据不发邮件
+// TODO: 验证码页面改为中文
 puppeteer.use(StealthPlugin());
 
 export class Crawler {

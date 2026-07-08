@@ -18,7 +18,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat.js";
 // TODO: 做权重式黑白名单
 // TODO: 写测试脚本和用例
 // TODO: 用主脚本命令传参的方式, 重构start:damai,start:douban,start:email三个命令
-// 绕过滑块验证码,暂采取Browserless方案, 让用户主动手动过码
+// 暂采取Browserless方案, 让用户主动手动过滑块验证码
 
 // 也是主搜索页
 const baseUrl = "https://search.damai.cn/searchajax.html";
