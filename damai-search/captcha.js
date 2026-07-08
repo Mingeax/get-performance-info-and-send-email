@@ -1,16 +1,16 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { writeFileSync } from "fs";
-
+// TODO: 写测试命令, 只爬数据不发邮件
 puppeteer.use(StealthPlugin());
 
 export class Crawler {
   constructor(browser) {
     this.#browser = browser;
-    this.#browser.on("disconnected", () => {
+    this.#browser.once("disconnected", () => {
       this.dispose();
-      // process.exit(0);
       console.log("浏览器实例已被手动关闭或崩溃！");
+      process.exit(0);
     });
   }
 
@@ -33,7 +33,7 @@ export class Crawler {
     const page = await this.#browser.newPage();
 
     this.#page = page;
-    this.#page.on("close", () => {
+    this.#page.once("close", () => {
       this.dispose();
       // process.exit(0);
       console.log("当前页面（Tab 页）已被用户手动关闭！");
@@ -109,8 +109,8 @@ export class Crawler {
   async dispose() {
     console.log("dispose!");
 
-    this.#page?.removeAllListeners();
-    this.#browser?.removeAllListeners();
+    this.#page?.removeAllListeners('close');
+    this.#browser?.removeAllListeners('disconnected');
     try {
       if (this.#page && !this.#page.isClosed()) {
         await this.#page.close().catch(() => {});

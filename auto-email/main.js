@@ -52,14 +52,14 @@ const mailOptions = {
 
 const fileMap = new Map();
 
-filePaths.forEach((path) => {
-  if (!pathExists(path)) return;
+for (const path of filePaths) {
+  if (!(await pathExists(path))) continue;
 
   const fileName = basename(path);
   const file = readFile(path, "utf8");
 
   fileMap.set(fileName, file);
-});
+}
 
 Promise.allSettled(fileMap.values()).then(
   (contents) => {

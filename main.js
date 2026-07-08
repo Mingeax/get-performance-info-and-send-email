@@ -30,30 +30,27 @@ const doubanSearchChild = spawn(
 
 // children.add(damaiSearchChild).add(doubanSearchChild);
 
-damaiSearchChild.on("close", (code) => {
-  // children.delete(damaiSearchChild);
+function spawnAutoEmailChild(filePathArgs) {
   const autoEmailChild = spawn(
     "node",
-    [emailScriptPath, filePathArgName, filePathArgsDamai],
+    [emailScriptPath, filePathArgName, filePathArgs],
     spawnStdioOption
   );
   autoEmailChild.on("close", (code) => {
     // children.delete(autoEmailChild);
     console.log(`autoMailChild子进程退出，退出码 ${code}`);
   });
+  return autoEmailChild;
+}
+
+damaiSearchChild.on("close", (code) => {
+  // children.delete(damaiSearchChild);
+  spawnAutoEmailChild(filePathArgsDamai);
   console.log(`damaiSearchChild子进程退出，退出码 ${code}`);
 });
 doubanSearchChild.on("close", (code) => {
   // children.delete(doubanSearchChild);
-  const autoEmailChild = spawn(
-    "node",
-    [emailScriptPath, filePathArgName, filePathArgsDouban],
-    spawnStdioOption
-  );
-  autoEmailChild.on("close", (code) => {
-    // children.delete(autoEmailChild);
-    console.log(`autoMailChild子进程退出，退出码 ${code}`);
-  });
+  spawnAutoEmailChild(filePathArgsDouban);
   console.log(`doubanSearchChild子进程退出，退出码 ${code}`);
 });
 
