@@ -61,6 +61,7 @@ for (const path of filePaths) {
   fileMap.set(fileName, file);
 }
 
+// TODO: 打印log时将文件名也带上
 Promise.allSettled(fileMap.values()).then(
   (contents) => {
     const names = Array.from(fileMap.keys());
